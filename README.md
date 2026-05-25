@@ -4,6 +4,9 @@ AquaDose is an ESP32-based aquarium dosing controller with a native Android app 
 
 Open [README.html](README.html) in a browser for the full styled guide with screenshots, wiring notes, firmware instructions, Android app flow, troubleshooting, and safety notes. GitHub does not render Bootstrap HTML as a normal README page, so this markdown file is intentionally short.
 
+# AquaDose wiring diagram 
+![AquaDose prototype](docs/assets/circuit_image.png)
+
 ## Release Contents
 
 ```text
