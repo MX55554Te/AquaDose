@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.AquaDose" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:colorAccent">#006C84</item>
+    </style>
+</resources>
+

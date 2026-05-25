@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AquaDose Release Guide</title>
+  <link rel="stylesheet" href="docs/assets/vendor/bootstrap/bootstrap.min.css">
+  <style>
+    :root {
+      --ad-ink: #172033;
+      --ad-muted: #667085;
+      --ad-line: #d8e2ef;
+      --ad-soft: #f5f8fb;
+      --ad-blue: #0d6efd;
+      --ad-green: #157347;
+      --ad-warn: #9a6700;
+    }
+    body { color: var(--ad-ink); background: var(--ad-soft); }
+    .top-band { background: #0d2b45; color: #fff; }
+    .nav-pills .nav-link { color: #24415c; border: 1px solid transparent; }
+    .nav-pills .nav-link:hover { border-color: var(--ad-line); background: #fff; }
+    .guide-card { border: 1px solid var(--ad-line); border-radius: .5rem; box-shadow: 0 10px 22px rgba(23,32,51,.05); }
+    .section-title { border-bottom: 1px solid var(--ad-line); padding-bottom: .5rem; margin-bottom: 1rem; }
+    .muted { color: var(--ad-muted); }
+    .badge-soft { background: #edf6ff; color: #0b5ed7; border: 1px solid #cfe4ff; }
+    .shot { border: 1px solid var(--ad-line); border-radius: .5rem; background: #fff; overflow: hidden; }
+    .shot img { width: 100%; height: auto; display: block; }
+    .shot figcaption { padding: .75rem .9rem; font-size: .92rem; color: var(--ad-muted); border-top: 1px solid var(--ad-line); }
+    pre { background: #111827; color: #e5e7eb; border-radius: .5rem; padding: 1rem; overflow: auto; }
+    code { color: #0b5ed7; }
+    pre code { color: inherit; }
+    .table thead th { background: #eef4fb; }
+    .callout { border-left: .25rem solid var(--ad-blue); background: #fff; padding: 1rem; border-radius: .35rem; }
+    .callout-warning { border-left-color: var(--ad-warn); background: #fff8e6; }
+    .callout-danger { border-left-color: #dc3545; background: #fff1f2; }
+    .flow { font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; background: #fff; border: 1px solid var(--ad-line); border-radius: .5rem; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <header class="top-band py-4">
+    <div class="container">
+      <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+          <p class="mb-1 text-white-50">GitHub-ready release package</p>
+          <h1 class="display-5 fw-semibold mb-2">AquaDose</h1>
+          <p class="lead mb-0">ESP32 aquarium dosing controller with Android app and local web interface.</p>
+        </div>
+        <div class="align-self-lg-end">
+          <span class="badge text-bg-light">APK: debug build</span>
+          <span class="badge text-bg-info">Android 8.0+</span>
+          <span class="badge text-bg-success">8 pump channels</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container my-4">
+    <nav class="nav nav-pills flex-column flex-md-row gap-2 mb-4" aria-label="Guide navigation">
+      <a class="nav-link" href="#overview">Overview</a>
+      <a class="nav-link" href="#hardware">Hardware</a>
+      <a class="nav-link" href="#simplified-wiring">Simplified Wiring Overview</a>
+      <a class="nav-link" href="#prototype">Real Prototype Photos</a>
+      <a class="nav-link" href="#enclosure">3D Printed Enclosure</a>
+      <a class="nav-link" href="#firmware">Firmware</a>
+      <a class="nav-link" href="#android">Android</a>
+      <a class="nav-link" href="#web">Web Interface</a>
+      <a class="nav-link" href="#install">Install Flow</a>
+      <a class="nav-link" href="#troubleshooting">Troubleshooting</a>
+      <a class="nav-link" href="#developer">Developer</a>
+      <a class="nav-link" href="#credits">Credits</a>
+    </nav>
+
+    <section id="overview" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Project Overview</h2>
+        <p>AquaDose is a local-network aquarium dosing system. It uses an ESP32 to switch calibrated peristaltic pumps through MOSFET driver circuits, then exposes control through both a browser-based web interface and a native Android app.</p>
+        <p>The project solves a practical aquarium maintenance problem: small, repeatable doses of additives are hard to do manually with consistency. AquaDose stores pump calibration rates and daily schedules so each channel can dose a configured amount at a configured time.</p>
+        <div class="row g-3">
+          <div class="col-md-6 col-xl-3"><div class="p-3 bg-white border rounded h-100"><strong>ESP32 firmware</strong><br><span class="muted">Wi-Fi setup, web UI, pump scheduler, NVS storage, HTTP API.</span></div></div>
+          <div class="col-md-6 col-xl-3"><div class="p-3 bg-white border rounded h-100"><strong>Android app</strong><br><span class="muted">Local controller connection, dashboard, pump controls, calibration, schedules, settings.</span></div></div>
+          <div class="col-md-6 col-xl-3"><div class="p-3 bg-white border rounded h-100"><strong>Web interface</strong><br><span class="muted">Browser UI served directly by the ESP32 at its local IP address.</span></div></div>
+          <div class="col-md-6 col-xl-3"><div class="p-3 bg-white border rounded h-100"><strong>Peristaltic pumps</strong><br><span class="muted">Up to 8 dosing channels, switched through external drivers.</span></div></div>
+        </div>
+        <h3 class="h5 mt-4">Architecture Flow</h3>
+        <div class="flow">
+          Android app or web browser<br>
+          -&gt; ESP32 HTTP endpoints: /status, /savePump, /manual, /primeStart, /calRun, /calSave, /saveTZ, /stop, /reset, /factoryReset<br>
+          -&gt; Firmware scheduler and pump runner<br>
+          -&gt; ESP32 GPIO pins<br>
+          -&gt; MOSFET driver circuits with flyback protection<br>
+          -&gt; Peristaltic pump channels
+        </div>
+      </div>
+    </section>
+
+    <section id="hardware" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Hardware Requirements</h2>
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <ul>
+              <li>ESP32 development board.</li>
+              <li>1 to 8 peristaltic dosing pumps.</li>
+              <li>Logic-level N-MOSFET per pump channel.</li>
+              <li>100&Omega; resistor per pump channel between ESP32 GPIO and MOSFET Gate.</li>
+              <li>10k&Omega; resistor per pump channel, connected between MOSFET Gate and Source/GND.</li>
+              <li>Flyback diode per pump motor, with the striped cathode side on Pump + / +12V.</li>
+              <li>External pump power supply sized for the pump voltage and total current.</li>
+              <li>Shared common GND between ESP32 GND, buck GND, MOSFET sources, and 12V PSU negative.</li>
+              <li>Tubing, containers, and a gram scale for calibration with water.</li>
+            </ul>
+            <div class="callout mt-3">
+              <strong>MOSFET selection:</strong> Use a MOSFET that is fully enhanced at ESP32 logic level, 3.3V Vgs. Do not rely only on the threshold voltage from the datasheet. The MOSFET must have low Rds(on) at 2.5V or 3.3V gate drive, especially if the pump current is high.
+            </div>
+            <div class="callout callout-danger mt-3">
+              <strong>Safety note:</strong> aquarium dosing errors can harm livestock. Test every channel with water, label every tube, calibrate before dosing additives, and start with small manual test doses.
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <figure class="shot">
+              <img src="docs/assets/images/single-pump-channel.svg" alt="Single pump channel low-side N-MOSFET wiring schematic">
+              <figcaption>Correct low-side N-MOSFET wiring for one pump channel.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="wiring" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Wiring Overview</h2>
+        <p>The firmware defaults to 8 pump outputs. If fewer pumps are installed, use the first channels and reduce <code>PUMP_COUNT</code> in the firmware if desired. Each pump channel repeats the same low-side N-MOSFET block.</p>
+        <figure class="shot mt-3">
+          <img src="docs/assets/images/single-pump-channel.svg" alt="Single pump channel low-side N-MOSFET wiring with flyback diode and pull-down resistor">
+          <figcaption>Single pump channel wiring: Pump + to +12V, Pump - to MOSFET Drain, Source to Common GND, GPIO through 100&Omega; to Gate, and 10k&Omega; Gate-to-Source/GND pull-down.</figcaption>
+        </figure>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-6"><div class="callout"><strong>Pull-down resistor:</strong> The 10k&Omega; pull-down resistor keeps the MOSFET gate LOW while the ESP32 is booting, resetting, disconnected, or when the GPIO is floating. Without it, a pump may turn on unexpectedly.</div></div>
+          <div class="col-md-6"><div class="callout"><strong>Gate resistor:</strong> The 100&Omega; resistor is a series gate resistor. It limits transient current from the ESP32 GPIO into the MOSFET gate. It does not replace the pull-down resistor.</div></div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-md-6"><div class="callout"><strong>Power separation:</strong> the ESP32 GPIO controls the MOSFET gate only. The pump motor is powered by the external pump supply, not by the ESP32 pin. Do not power pump motors from ESP32 pins.</div></div>
+          <div class="col-md-6"><div class="callout"><strong>Common ground:</strong> Common GND means ESP32 GND, buck GND, MOSFET source, and 12V PSU negative must be connected together so the gate signal has the same reference as the driver.</div></div>
+        </div>
+
+        <p class="mt-3">Inductive pump motors need flyback protection. Connect the diode across the pump motor with the diode cathode / striped side to Pump + / +12V and the diode anode to Pump - / MOSFET Drain.</p>
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle">
+            <thead><tr><th>Pump</th><th>ESP32 GPIO</th><th>Gate resistor</th><th>Pull-down</th><th>MOSFET Drain</th><th>MOSFET Source</th><th>Diode</th></tr></thead>
+            <tbody>
+              <tr><td>Pump 1</td><td>GPIO25</td><td>100&Omega;</td><td>10k&Omega; Gate-to-GND</td><td>Pump -</td><td>Common GND</td><td>Across pump, stripe to +12V</td></tr>
+              <tr><td>Pump 2</td><td>GPIO26</td><td>100&Omega;</td><td>10k&Omega; Gate-to-GND</td><td>Pump -</td><td>Common GND</td><td>Across pump, stripe to +12V</td></tr>
+              <tr><td>Pump 3</td><td>GPIO27</td><td>100&Omega;</td><td>10k&Omega; Gate-to-GND</td><td>Pump -</td><td>Common GND</td><td>Across pump, stripe to +12V</td></tr>
+              <tr><td>Pump 4</td><td>GPIO14</td><td>100&Omega;</td><td>10k&Omega; Gate-to-GND</td><td>Pump -</td><td>Common GND</td><td>Across pump, stripe to +12V</td></tr>
+              <tr><td>Pump 5</td><td>GPIO32</td><td>100&Omega;</td><td>10k&Omega; Gate-to-GND</td><td>Pump -</td><td>Common GND</td><td>Across pump, stripe to +12V</td></tr>
+              <tr><td>Pump 6</td><td>GPIO33</td><td>100&Omega;</td><td>10k&Omega; Gate-to-GND</td><td>Pump -</td><td>Common GND</td><td>Across pump, stripe to +12V</td></tr>
+              <tr><td>Pump 7</td><td>GPIO18</td><td>100&Omega;</td><td>10k&Omega; Gate-to-GND</td><td>Pump -</td><td>Common GND</td><td>Across pump, stripe to +12V</td></tr>
+              <tr><td>Pump 8</td><td>GPIO19</td><td>100&Omega;</td><td>10k&Omega; Gate-to-GND</td><td>Pump -</td><td>Common GND</td><td>Across pump, stripe to +12V</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <figure class="shot mt-3">
+          <img src="docs/assets/images/multi-channel-repeat.svg" alt="AquaDose multi-channel pump wiring overview">
+          <figcaption>Multi-channel overview: every pump repeats the same MOSFET, 100&Omega; gate resistor, 10k&Omega; pull-down, flyback diode, and common GND wiring.</figcaption>
+        </figure>
+
+        <h3 id="simplified-wiring" class="h5 mt-4">Simplified Wiring Overview</h3>
+        <p>This simplified schematic shows the overall wiring idea for the ESP32, buck converter, MOSFET, pull-down resistor, flyback diode, and pump motor.</p>
+        <figure class="shot mt-3">
+          <a href="docs/assets/prototype/circuit_image.png">
+            <img src="docs/assets/prototype/circuit_image.png" alt="Simplified AquaDose wiring overview with ESP32, buck converter, MOSFET, pull-down resistor, flyback diode, and pump motor">
+          </a>
+          <figcaption>Beginner-friendly wiring overview copied from the real prototype assets.</figcaption>
+        </figure>
+        <div class="callout callout-warning mt-3">
+          <strong>Use the SVG schematic above as the authoritative wiring reference.</strong> The simplified image matches the intended low-side MOSFET idea: +12V to Pump +, Pump - to MOSFET Drain, MOSFET Source to Common GND, GPIO through 100&Omega; to Gate, 10k&Omega; Gate-to-Source/GND pull-down, and flyback diode across the pump with the stripe/cathode toward +12V. Before building, verify the exact MOSFET you use is fully enhanced by a 3.3V ESP32 gate signal.
+        </div>
+      </div>
+    </section>
+
+    <section id="prototype" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Real Prototype Photos</h2>
+        <p>These are photos from the real AquaDose prototype/build. They are included as practical build context, while the wiring schematic remains the electrical reference.</p>
+        <div class="row g-3">
+          <div class="col-md-6 col-xl-3">
+            <h3 class="h6">Pump wiring</h3>
+            <figure class="shot">
+              <a href="docs/assets/prototype/prototype_01.jpeg"><img src="docs/assets/prototype/prototype_01.jpeg" alt="AquaDose prototype breadboard pump driver wiring"></a>
+              <figcaption>Breadboard pump driver wiring during bench testing.</figcaption>
+            </figure>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <h3 class="h6">Physical assembly</h3>
+            <figure class="shot">
+              <a href="docs/assets/prototype/prototype_02.jpeg"><img src="docs/assets/prototype/prototype_02.jpeg" alt="AquaDose prototype pump plate with four peristaltic pumps"></a>
+              <figcaption>Four peristaltic pumps mounted on the prototype front plate.</figcaption>
+            </figure>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <h3 class="h6">Prototype electronics</h3>
+            <figure class="shot">
+              <a href="docs/assets/prototype/prototype_03.jpeg"><img src="docs/assets/prototype/prototype_03.jpeg" alt="AquaDose prototype electronics and buck converter near printed enclosure"></a>
+              <figcaption>ESP32, perfboard wiring, and buck converter during enclosure fit-up.</figcaption>
+            </figure>
+          </div>
+          <div class="col-md-6 col-xl-3">
+            <h3 class="h6">Android app/device testing</h3>
+            <figure class="shot">
+              <a href="docs/assets/prototype/prototype_04.jpeg"><img src="docs/assets/prototype/prototype_04.jpeg" alt="AquaDose Android app connected to prototype controller"></a>
+              <figcaption>Android app connected to the prototype controller on the bench.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="enclosure" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">3D Printed Enclosure</h2>
+        <p>The release includes a printable AquaDose case model intended for the controller enclosure and four-pump front panel. Verify dimensions, mounting hardware, clearances, pump fit, and cable routing before printing.</p>
+        <p><a class="btn btn-primary" href="3d-model/AquaDose_Case.3mf">Download AquaDose_Case.3mf</a></p>
+        <div class="row g-3">
+          <div class="col-md-6 col-xl-3"><figure class="shot"><a href="docs/assets/3d-model/images/case_01.png"><img src="docs/assets/3d-model/images/case_01.png" alt="AquaDose 3D enclosure exploded CAD view"></a><figcaption>Exploded CAD view of enclosure parts.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-3"><figure class="shot"><a href="docs/assets/3d-model/images/case_02.png"><img src="docs/assets/3d-model/images/case_02.png" alt="AquaDose 3D enclosure angled model view"></a><figcaption>Angled view with numbered pump panel.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-3"><figure class="shot"><a href="docs/assets/3d-model/images/case_03.png"><img src="docs/assets/3d-model/images/case_03.png" alt="AquaDose 3D enclosure front side CAD view"></a><figcaption>Front and side enclosure geometry.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-3"><figure class="shot"><a href="docs/assets/3d-model/images/case_04.png"><img src="docs/assets/3d-model/images/case_04.png" alt="AquaDose 3D enclosure front panel with four pump openings"></a><figcaption>Front panel with four pump openings and AquaDose label.</figcaption></figure></div>
+        </div>
+        <div class="callout mt-3">
+          <strong>Printing note:</strong> no slicer profile or material settings were found in the project. Choose settings appropriate for your printer and material, and confirm the model fits the actual pumps and electronics before final assembly.
+        </div>
+      </div>
+    </section>
+
+    <section id="firmware" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Arduino / ESP32 Firmware Guide</h2>
+        <p>Firmware source is located at <a href="source/arduino/AquaDose/AquaDose.ino"><code>source/arduino/AquaDose/AquaDose.ino</code></a>.</p>
+        <h3 class="h5">Detected Libraries</h3>
+        <ul>
+          <li><code>WiFi.h</code></li>
+          <li><code>WebServer.h</code></li>
+          <li><code>Preferences.h</code></li>
+          <li><code>time.h</code></li>
+          <li>ESP-IDF watchdog headers included with ESP32 Arduino core</li>
+        </ul>
+        <h3 class="h5">Open And Upload</h3>
+        <ol>
+          <li>Install the ESP32 board package in Arduino IDE.</li>
+          <li>Open <a href="source/arduino/AquaDose/AquaDose.ino"><code>source/arduino/AquaDose/AquaDose.ino</code></a>.</li>
+          <li>Select the matching ESP32 board and serial port.</li>
+          <li>Confirm the pump pin array matches your wiring.</li>
+          <li>Upload to the ESP32.</li>
+          <li>Open Serial Monitor at <code>115200</code> baud for boot and status logs.</li>
+        </ol>
+        <h3 class="h5">Wi-Fi Setup And Reset</h3>
+        <p>On first boot, after Wi-Fi reset, or when saved Wi-Fi cannot connect, the firmware starts SoftAP setup mode. The AP SSID starts with <code>AquaDose</code>, the password is <code>12345678</code>, and the setup address is <code>http://192.168.4.1</code>.</p>
+        <p>The source does not include a DNS captive portal library, so open the setup address manually in a browser after joining the AquaDose AP.</p>
+        <ul>
+          <li><code>/reset</code> clears Wi-Fi settings and reboots into setup mode while keeping pump configuration.</li>
+          <li><code>/factoryReset</code> clears Wi-Fi, timezone, pump names, calibration rates, schedules, and schedule history.</li>
+          <li>Holding BOOT/GPIO0 during startup for about 5 seconds also triggers factory reset.</li>
+        </ul>
+        <h3 class="h5">Calibration</h3>
+        <p>Calibration runs a selected pump for 60 seconds. The user weighs the collected water in grams, and the firmware stores <code>mlPerSec = grams / 60</code>. Manual and scheduled dosing use that saved rate. Manual dose duration is capped by the firmware safety limit.</p>
+      </div>
+    </section>
+
+    <section id="android" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Android App Guide</h2>
+        <p>The APK is at <code>apk/AquaDose.apk</code>. This release uses a debug APK because release signing is not configured in the project. Android source shows <code>minSdk = 26</code>, so the app supports Android 8.0 and newer.</p>
+        <pre><code>adb install -r apk/AquaDose.apk</code></pre>
+        <p>The app stores only the controller address locally on the phone. It communicates with the ESP32 over local HTTP.</p>
+        <p>The Android UI is adaptive. Compact-width screens use a single-column layout with bottom navigation. Medium and expanded widths use a navigation rail, and the Pumps screen becomes a list-detail workspace with pump cards on one side and the selected pump controls on the other.</p>
+        <div class="row g-3">
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/12-connection-setup.png" alt="AquaDose Android connection setup screen"><figcaption>Saved controller address and reconnect settings.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/01-dashboard.png" alt="AquaDose Android dashboard"><figcaption>Main dashboard with controller status and pump state.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/02-pump-list.png" alt="AquaDose Android pump list"><figcaption>Pump list showing GPIO mapping and calibration status.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/04-pump-actions.png" alt="AquaDose Android pump actions"><figcaption>Pump detail with status and emergency stop access.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/05-calibration-screen.png" alt="AquaDose Android calibration screen"><figcaption>Calibration workflow: 60 second run, measured grams, save rate.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/06-configuration.png" alt="AquaDose Android pump configuration"><figcaption>Pump name, direct calibration rate, and schedule permission.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/07-schedule-screen.png" alt="AquaDose Android schedule editor"><figcaption>Schedule editor with daily slots, hour, minute, and dose amount.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/08-settings.png" alt="AquaDose Android settings"><figcaption>Settings: controller address and timezone sections.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/09-settings-maintenance.png" alt="AquaDose Android maintenance settings"><figcaption>Maintenance section for Wi-Fi reset and local app details.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/10-factory-reset-flow.png" alt="AquaDose Android factory reset first confirmation"><figcaption>First factory reset confirmation. Reset was not executed.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/11-factory-reset-confirmation.png" alt="AquaDose Android factory reset confirmation"><figcaption>Factory reset confirmation. The release screenshot did not execute reset.</figcaption></figure></div>
+          <div class="col-md-6 col-xl-4"><figure class="shot"><img src="docs/assets/screenshots/13-logs.png" alt="AquaDose Android logs"><figcaption>Controller logs returned from the ESP32 status response.</figcaption></figure></div>
+        </div>
+        <h3 class="h5 mt-4">Connect The Android App To The ESP32</h3>
+        <ol>
+          <li>Power the ESP32 and make sure the phone is on the same local network.</li>
+          <li>Open the app and enter the controller address, for example <code>http://192.168.0.129</code>.</li>
+          <li>Use <strong>Use setup address</strong> for <code>http://192.168.4.1</code> while the phone is connected to the AquaDose setup AP.</li>
+          <li>Tap refresh after saving the address. The Dashboard should show <strong>Online</strong>, controller time, time validity, and pump running state.</li>
+        </ol>
+
+        <h3 class="h5 mt-4">Pump List And Pump Names</h3>
+        <ul>
+          <li>The Pumps screen lists all channels returned by <code>/status</code>, including pump number, saved pump name, GPIO pin, scheduled dosing permission, enabled schedule count, calibration state, and calibration rate.</li>
+          <li>On wider screens, the pump list and selected pump detail are shown side by side so pump status and actions remain visible without losing the list context.</li>
+          <li>Open a pump and edit <strong>Pump name</strong> in the Configuration section. Names are trimmed, must not be empty, and are limited to 31 characters to match the firmware storage field.</li>
+          <li>Tap <strong>Save pump settings</strong>. The app saves through the ESP32 <code>/savePump</code> endpoint, refreshes <code>/status</code>, and shows the confirmed name from the controller.</li>
+        </ul>
+
+        <h3 class="h5 mt-4">Calibration And Pump Actions</h3>
+        <ul>
+          <li>Calibration shows the current rate in ml/sec. The Configuration section can also save a direct calibration rate from 0 to 100 ml/sec through <code>/savePump</code>.</li>
+          <li>The 60 second calibration flow runs the pump, then saves measured grams through <code>/calSave</code>, where the firmware stores <code>mlPerSec = grams / 60</code>.</li>
+          <li>Uncalibrated pumps use the firmware's stored default rate of <code>0.0</code>. This project does not define a 65 ml per 60 seconds fallback.</li>
+          <li>Manual dosing uses <code>/manual</code> after confirmation. Prime uses <code>/primeStart</code> after confirmation, and Stop Prime uses <code>/primeStop</code>.</li>
+          <li>Emergency Stop sends <code>/stop</code> after confirmation.</li>
+        </ul>
+
+        <h3 class="h5 mt-4">Scheduled Dosing</h3>
+        <ul>
+          <li>Scheduled dosing must be explicitly allowed per pump. The pump detail screen shows whether schedules are allowed or blocked.</li>
+          <li>Each pump has 8 daily schedule rows with enable state, hour, minute, and amount. Rows that have local edits are marked as unsaved until <strong>Save schedule</strong> succeeds and the app refreshes from the ESP32.</li>
+          <li>The Android app and firmware validate scheduled dose amounts from 0.1 to 999 ml before saving to the controller.</li>
+          <li>After saving schedules or schedule permission, the app waits for the ESP32 response, refreshes <code>/status</code>, and reloads the confirmed state from the controller.</li>
+        </ul>
+
+        <h3 class="h5 mt-4">Logs, Reconnect, And Reset Flows</h3>
+        <ul>
+          <li>Logs shows RAM-only controller logs returned from <code>/status</code>. Logs clear after controller reboot.</li>
+          <li>Settings supports saved controller address, timezone save, Wi-Fi reset, and factory reset.</li>
+          <li>Wi-Fi reset opens a confirmation before calling <code>/reset</code>. Factory reset requires two confirmations before calling <code>/factoryReset</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="web" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Web Interface Guide</h2>
+        <p>The web interface is served by the ESP32 firmware on port 80. During setup mode, join the AquaDose AP and open <code>http://192.168.4.1</code>. After the controller joins your Wi-Fi, open the controller IP shown in Serial Monitor or in your router.</p>
+        <h3 class="h5">Setup Page</h3>
+        <p>When in setup mode, the root page displays a Wi-Fi SSID field, Wi-Fi password field, timezone select, and <strong>Save and Reboot</strong>. If the new credentials fail on first validation, the firmware returns to setup mode.</p>
+        <h3 class="h5">Main Page Sections</h3>
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead><tr><th>Section</th><th>Actual source behavior</th></tr></thead>
+            <tbody>
+              <tr><td>Dashboard/status</td><td>Shows pump status, controller time, pump count, active schedule count, and refreshed status from <code>/status</code>.</td></tr>
+              <tr><td>Pumps</td><td>Renders one card per pump with name edit/save, GPIO pin, schedule permission, calibration rate, calibration steps, action buttons, and daily schedule rows.</td></tr>
+              <tr><td>Calibration</td><td>Provides Start Prime, Stop Prime, Calibrate 60s, Save Calibration, and Manual Dose Now.</td></tr>
+              <tr><td>Scheduling</td><td>Each pump has 8 daily schedule rows with enable checkbox, hour, minute, and ml amount. Save Pump Settings writes the full pump configuration through <code>/savePump</code>.</td></tr>
+              <tr><td>Settings</td><td>Timezone selection, Wi-Fi reset, and factory reset controls are in the lower page panels.</td></tr>
+              <tr><td>Logs</td><td>A floating debug log window shows RAM-only logs from the controller. Logs clear on reboot.</td></tr>
+              <tr><td>Safety indicators</td><td>Status cards show all-pumps-idle or active pump state. The firmware rejects invalid pump index, uncalibrated manual dose, too-long doses, busy pump actions, and invalid schedule values.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-warning">
+          <strong>Known web UI limitation:</strong> the current firmware source references Bootstrap and Bootstrap Icons from CDN URLs for the ESP32-served web page. This release guide itself is self-contained and uses local Bootstrap files, but the firmware web UI styling/icons may depend on internet access from the browser unless the firmware is changed to serve local assets.
+        </div>
+      </div>
+    </section>
+
+    <section id="contents" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Release Contents</h2>
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead><tr><th>Path</th><th>Use</th></tr></thead>
+            <tbody>
+              <tr><td><code>apk/AquaDose.apk</code></td><td>Installable Android debug APK.</td></tr>
+              <tr><td><code>apk/SHA256SUMS.txt</code></td><td>SHA256 checksum for verifying the APK file.</td></tr>
+              <tr><td><code>source/android/</code></td><td>Self-contained Android source copy with app and API contract project.</td></tr>
+              <tr><td><code>source/arduino/AquaDose/AquaDose.ino</code></td><td>ESP32 Arduino sketch, ready to open directly in Arduino IDE.</td></tr>
+              <tr><td><code>docs/assets/screenshots/</code></td><td>Real screenshots captured from the connected Android phone using ADB.</td></tr>
+              <tr><td><code>docs/assets/images/</code></td><td>Wiring diagrams referenced by this guide.</td></tr>
+              <tr><td><code>docs/assets/prototype/</code></td><td>Real prototype photos and the beginner-friendly simplified wiring schematic.</td></tr>
+              <tr><td><code>docs/assets/3d-model/images/</code></td><td>Images and renders of the 3D printed enclosure/model.</td></tr>
+              <tr><td><code>3d-model/AquaDose_Case.3mf</code></td><td>Printable 3MF file for the AquaDose case.</td></tr>
+              <tr><td><code>docs/assets/vendor/bootstrap/</code></td><td>Local Bootstrap CSS, JS bundle, and license for this HTML guide.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="install" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Installation Flow</h2>
+        <ol>
+          <li>Flash the ESP32 firmware from <code>source/arduino/AquaDose/AquaDose.ino</code>.</li>
+          <li>Connect your phone or computer to the AquaDose Wi-Fi setup AP.</li>
+          <li>Open <code>http://192.168.4.1</code>, enter Wi-Fi credentials, select timezone, and save.</li>
+          <li>Install the Android APK from <code>apk/AquaDose.apk</code>.</li>
+          <li>Connect the app to the controller IP, or use the setup address while still on the setup AP.</li>
+          <li>Open the pump list, confirm every GPIO mapping, and edit pump names if needed.</li>
+          <li>Prime tubing with water.</li>
+          <li>Calibrate every pump with the 60 second water test.</li>
+          <li>Create schedule rows only after calibration. Enabled schedule doses must be between 0.1 and 999 ml.</li>
+          <li>Test a small manual dose with water before dosing aquarium additives.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="safety" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Safety And Limitations</h2>
+        <ul>
+          <li>Do not dose without calibration. The firmware rejects manual doses for pumps with rate below the calibration threshold.</li>
+          <li>Dose inputs accept 0.1 to 999 ml, but AquaDose cannot decide what is safe for the aquarium. Use conservative values and test with water first.</li>
+          <li>Do not exceed safe daily dosing amounts for the aquarium. AquaDose cannot know livestock tolerance.</li>
+          <li>Test pumps with water before fertilizer, trace elements, alkalinity, calcium, or other additives.</li>
+          <li>Wrong wiring can trigger the wrong pump, prevent pumps from running, or make pumps run together.</li>
+          <li>Use flyback diodes and a driver circuit. Do not connect a pump directly to an ESP32 GPIO pin.</li>
+          <li>Only one pump is intended to run at a time in the firmware run state.</li>
+          <li>Controller logs are stored in RAM and clear after reboot.</li>
+          <li>The APK in this release is debug signed, not production signed.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="troubleshooting" class="card guide-card mb-4">
+      <div class="card-body">
+        <h2 class="section-title">Troubleshooting</h2>
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle">
+            <thead><tr><th>Problem</th><th>Checks</th></tr></thead>
+            <tbody>
+              <tr><td>Phone cannot find device</td><td>Confirm the phone is on the same Wi-Fi network as the ESP32, or join the AquaDose setup AP and use <code>http://192.168.4.1</code>.</td></tr>
+              <tr><td>ESP32 not connecting to Wi-Fi</td><td>Use Serial Monitor at 115200 baud. If credentials fail on first validation, firmware returns to setup AP mode. Re-enter SSID/password.</td></tr>
+              <tr><td>Pump does not run</td><td>Check external pump power, MOSFET wiring, shared ground, pump polarity, and that another pump is not already running.</td></tr>
+              <tr><td>Wrong pump runs</td><td>Compare wiring against the GPIO table and the app pump cards. Correct either wiring or the <code>PUMP_PINS</code> array.</td></tr>
+              <tr><td>All pumps run together</td><td>Check MOSFET driver wiring, common ground, gate pulldowns if used, and accidental shorting between driver inputs.</td></tr>
+              <tr><td>Dose amount is inaccurate</td><td>Prime the tube, rerun 60 second calibration with water, weigh accurately, and save calibration for the correct pump.</td></tr>
+              <tr><td>Pump name does not change</td><td>Use 1 to 31 non-blank characters, tap Save pump settings, then refresh. The app shows the name confirmed by <code>/status</code>.</td></tr>
+              <tr><td>Schedule does not save</td><td>Check that enabled rows use hour 0-23, minute 0-59, and dose 0.1-999 ml.</td></tr>
+              <tr><td>Schedule does not trigger</td><td>Confirm controller time is valid, timezone is correct, pump scheduled dosing is allowed, schedule row is enabled, pump is calibrated, and the controller is powered at the scheduled minute.</td></tr>
+              <tr><td>Factory reset does not return to setup flow</td><td>Wait for reboot, scan Wi-Fi for the AquaDose AP, or hold BOOT/GPIO0 during startup for about 5 seconds to trigger hardware factory reset.</td></tr>
+              <tr><td>APK install blocked by Android</td><td>Allow installation from the file source or install with ADB using <code>adb install -r apk/AquaDose.apk</code>. The APK is debug signed.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="developer" class="card guide-card mb-5">
+      <div class="card-body">
+        <h2 class="section-title">Developer Section</h2>
+        <h3 class="h5">Build Android App</h3>
+        <pre><code>cd source/android
+.\gradlew.bat :app:assembleDebug</code></pre>
+        <p>The copied Android release source keeps the local API contract inside <code>source/android/android-api-contract/</code> and uses a Gradle composite build.</p>
+        <h3 class="h5">Build Or Upload Firmware</h3>
+        <p>Open <code>source/arduino/AquaDose/AquaDose.ino</code> in Arduino IDE, select the ESP32 board, confirm pins and pump count, and upload. The firmware source is a single sketch with no separate local assets.</p>
+        <h3 class="h5">Folder Structure</h3>
+        <pre><code>RELEASE/
+  README.html
+  README.md
+  BUILD_NOTES.txt
+  apk/
+  3d-model/
+  source/android/
+  source/arduino/AquaDose/
+  docs/assets/
+    prototype/
+    3d-model/images/
+  web-interface-guide/</code></pre>
+        <h3 class="h5">Contributing</h3>
+        <ul>
+          <li>Keep firmware API changes in sync with <code>android-api-contract</code>.</li>
+          <li>Test pump actions with water before using real additives.</li>
+          <li>Do not commit release signing keys, keystores, local SDK paths, or local properties files.</li>
+          <li>Increment Android versionCode before publishing production builds.</li>
+        </ul>
+        <h3 class="h5">Known Limitations Found In This Release</h3>
+        <ul>
+          <li>Release signing is not configured, so the included APK is debug signed.</li>
+          <li>The ESP32-served web UI references CDN Bootstrap and Bootstrap Icons in firmware source.</li>
+          <li>No production app store listing, upload key, or signed AAB is included.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="credits" class="card guide-card mb-5">
+      <div class="card-body">
+        <h2 class="section-title">Credits</h2>
+        <p class="mb-1">Created by Or Araha</p>
+        <p class="mb-0">LinkedIn: <a href="https://www.linkedin.com/in/or-araha-05035aa5/" target="_blank" rel="noopener">https://www.linkedin.com/in/or-araha-05035aa5/</a></p>
+      </div>
+    </section>
+  </main>
+
+  <script src="docs/assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+</html>

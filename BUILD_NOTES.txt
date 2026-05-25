@@ -1,0 +1,267 @@
+AquaDose RELEASE Build Notes
+============================
+
+Latest physical E2E QA continuation:
+2026-05-15 23:18:00 +03:00
+
+Scope:
+Completed the previously blocked real pump activation checks after the controller outlets were confirmed safe for test-container/drain output. Factory reset and WiFi reset were not executed.
+
+Physical/controller QA performed:
+- ADB detected Samsung SM-G998B device R5CRB06R7TY and launched the Android app.
+- ESP32 at http://192.168.0.129/ was reachable and the web UI loaded.
+- Android manual dose flow was used for pumps 1-4 at 5 ml. /status showed only the intended runningPump for each run, then returned running=false and runningPump=-1.
+- ESP32 web UI Manual Dose Now flow was used from the phone browser for pumps 1-4 at 5 ml. /status showed only the intended runningPump for each run, then returned running=false and runningPump=-1.
+- Real near-future schedule activation used doses above the old 7 ml limit: Pump 1 = 9 ml, Pump 2 = 25 ml, Pump 3 = 100 ml, Pump 4 = 250.5 ml.
+- Schedules persisted in /status before execution and logs recorded SCHEDULE match, DOSE start, and DOSE complete entries with the requested dose values. No value was clamped to 7 ml.
+- Observed scheduled runtimes matched calculated runtimes: Pump 1 8.21s vs 8.06s, Pump 2 23.24s vs 23.08s, Pump 3 92.35s vs 92.31s, Pump 4 100.52s vs 100.20s.
+- Pump 4 was temporarily set to 2.5000 ml/sec for the 250.5 ml scheduled test so the run stayed under the firmware's existing 120-second single-run guard; the pre-test Pump 4 rate of 0.0000 ml/sec was restored afterward.
+- Restored the controller to the saved pre-test state after QA and confirmed /status reported running=false and runningPump=-1.
+- Confirmed the Android app still loaded live controller status after restore.
+- Confirmed the ESP32 web UI still loaded after restore.
+
+Release artifact status:
+- No Android or firmware source changes were required during this QA continuation.
+- RELEASE/apk/AquaDose.apk remains the current rebuilt APK from the schedule dose range update.
+- RELEASE/apk/SHA256SUMS.txt still matches RELEASE/apk/AquaDose.apk.
+
+Latest schedule dose range update:
+2026-05-15 22:18:32 +03:00
+
+Purpose:
+Removed the old Android scheduled-dose cap and replaced dose validation across the app/API contract/firmware source with the requested 0.1 to 999 ml range.
+
+Implemented:
+- Removed the Android-only scheduled-dose cap from Compose UI validation and MainViewModel save/toggle logic.
+- Centralized dose limits in the shared android-api-contract validation constants.
+- Updated manual dose and schedule validation copy to say: enter a valid dose between 0.1 and 999 ml.
+- Updated Retrofit/query validation tests to cover 0.1, 1, 7, 25, 100, 250.5, and 999 ml.
+- Updated ESP32 firmware source and the legacy firmware sketch copy to validate dose values from 0.1 to 999 ml.
+- Updated README.html and README.md to remove the old scheduled-dose cap language.
+
+Build/test results:
+- android-api-contract test: passed.
+- Android app assembleDebug: passed.
+- Android app test: passed. App unit test tasks had no source tests.
+- Android lint: passed with warnings only, mostly existing dependency-version and Compose style warnings.
+
+Live ESP32 QA:
+- ESP32 at http://192.168.0.129/ was reachable.
+- Reversible /savePump persistence QA used Pump 2 with pump-level scheduled dosing kept blocked.
+- Verified 0.1, 1, 7, 25, 100, 250.5, and 999 ml saved through /savePump, reloaded from /status, and matched the requested value.
+- Restored Pump 2's original schedule afterward and confirmed no pump was running.
+
+ADB UI QA:
+- ADB detected device R5CRB06R7TY.
+- Installed the rebuilt APK and launched com.aquadose.app/.MainActivity.
+- Confirmed the app loaded live controller status from http://192.168.0.129/.
+- Confirmed manual dose and schedule dose fields show the 0.1 to 999 ml validation copy.
+- Confirmed the schedule dose field accepted 999 and 250.5 without UI clipping or validation error.
+- Did not press Save schedule from the phone during UI QA; ESP32 persistence was verified with the reversible direct API test above.
+
+Latest APK:
+RELEASE/apk/AquaDose.apk
+Size: 18,102,607 bytes
+SHA256: 0a0208430aa682fba105903c86acb79431d913eea20efcb863a7b04eb061abcc
+
+Previous Android UX/UI adaptive update:
+2026-05-15 15:06:50 +03:00
+
+Purpose:
+Improved the native Android app UX/UI while preserving ESP32 HTTP endpoints, pump control behavior, calibration, scheduling, settings, maintenance, and logs.
+
+Official UI guidance reviewed:
+- Android Developers adaptive layouts.
+- Android Developers window size classes.
+- Android Developers adaptive navigation.
+- Android Developers list-detail layout.
+- Android Developers accessibility guidance.
+- Material Design 3 adaptive layout guidance.
+
+Implemented in Android:
+- Added available-width adaptive behavior: compact, medium, and expanded width classes.
+- Compact width keeps the single-column phone flow with bottom navigation.
+- Medium/expanded width uses a navigation rail.
+- Medium/expanded Pumps uses list-detail layout: pump list on the left and selected pump detail/actions on the right.
+- Dashboard now shows the saved/current controller address when live status is loaded.
+- Pump cards now make the saved pump name prominent and show GPIO, calibration status, schedule permission, and enabled schedule count.
+- Schedule rows use a more responsive compact-vs-wide field layout while keeping dose validation visible and centralized.
+- Pump action loading is more visible while waiting for controller confirmation.
+- Schedule permission toggling no longer visually changes the saved pump state before the ESP32 confirms and /status refreshes.
+
+Preserved behavior:
+- ESP32 address normalization and HTTP communication.
+- /status polling and refresh.
+- /manual, /primeStart, /primeStop, /calRun, /calSave, /savePump, /saveTZ, /stop, /reset, and /factoryReset calls.
+- Pump name editing and direct calibration-rate save.
+- Full 8-slot schedule save payload preservation.
+- Scheduled dose validation before save.
+- Factory reset double-confirmation flow.
+
+Build/test results:
+- Android app assembleDebug: passed.
+- Root Gradle test: passed. App unit test tasks had no source tests.
+- android-api-contract test: passed.
+- Gradle lint: passed.
+- A clean rebuild attempt hit a Windows file lock in Gradle's lint cache; Gradle daemon was stopped and a fresh assembleDebug completed successfully.
+
+Device QA:
+- ADB available: Android Debug Bridge 37.0.0.
+- Connected device: R5CRB06R7TY.
+- Installed fresh debug APK with adb install -r.
+- Launched com.aquadose.app/.MainActivity.
+- Confirmed app loaded live ESP32 status from http://192.168.0.129/.
+- Confirmed dashboard showed Online, current controller address, controller time, timezone, and idle pump state.
+- Confirmed pump list loaded 8 pumps and showed pump name, GPIO, calibration status, schedule permission, and enabled schedule count.
+- Confirmed pump detail, manual dose UI, prime/stop UI, calibration UI, configuration UI, schedule editor, settings, maintenance, factory reset confirmations, and logs were present after install.
+- Confirmed landscape on the connected phone uses navigation rail and list-detail pump layout with live pump data.
+- Factory reset dialogs were opened for screenshot/flow verification and canceled; factory reset was not executed.
+- Hardware-moving actions were not confirmed during this QA pass because the physical aquarium/tubing/container state could not be verified from the tool session.
+
+Screenshots:
+- Updated docs/assets/screenshots/*.png from real ADB screencaps on the connected phone.
+- Factory reset screenshots show confirmation dialogs only and did not execute reset.
+
+Latest APK:
+RELEASE/apk/AquaDose.apk
+Size: 18,102,619 bytes
+SHA256: 7ba97f296c84efca912c69a411b479340376784f235d8a3d497ee806540f5a6f
+
+Release documentation update:
+- README.html updated for adaptive Android navigation/layout behavior, current screenshots, pump list/detail, configuration, calibration, manual dose, prime/stop prime, scheduled dosing validation, logs, reconnect/settings, factory reset flow, troubleshooting, and safe testing outside the aquarium.
+- README.md updated with the new APK checksum.
+
+Latest Android parity update:
+2026-05-15 14:41:15 +03:00
+
+Purpose:
+Compared the live ESP32 web UI at http://192.168.0.129/ with the Android source and firmware/API contract, then added Android support for confirmed missing pump-name editing and related confirmed pump configuration behavior.
+
+Implemented in Android:
+- Pump name edit/save in the pump Configuration section using the firmware /savePump endpoint.
+- Pump settings save refreshes /status and displays the controller-confirmed saved pump name.
+- Direct calibration rate edit/save through /savePump while preserving schedules.
+- Android-side pump name validation: trim whitespace, reject empty names, and limit names to 31 characters to match firmware storage.
+- Android schedule validation is performed before sending schedule changes.
+- Schedule editor now marks unsaved row edits clearly and resyncs draft rows after a confirmed save.
+
+Bug found and fixed:
+- After a valid schedule save, the phone UI initially kept showing the row as pending even though the ESP32 had accepted the save. MainViewModel now refreshes and resyncs schedule drafts after saving schedules.
+
+Build/test results:
+- android-api-contract tests: passed.
+- Android app assembleDebug: passed.
+- app:testDebugUnitTest: no test sources.
+
+Device QA:
+- ADB available.
+- Installed the fresh debug APK on Samsung SM-G998B, adb serial R5CRB06R7TY.
+- Launched com.aquadose.app/.MainActivity.
+- Connected to the ESP32 at http://192.168.0.129/.
+- Verified pump data loads, pump name save persists after app force-stop/relaunch, schedule validation blocks invalid enabled rows before sending, a valid schedule row saves/reloads from ESP32, row disable restores, and pump-level scheduled dosing toggles on/off with no enabled rows.
+- Verified Logs screen, Reset Wi-Fi confirmation, factory reset first confirmation, and Start Prime confirmation without confirming hardware-moving or reset actions.
+- No manual dose, prime start, 60-second calibration run, Wi-Fi reset, or factory reset command was confirmed during QA.
+
+Latest APK:
+RELEASE/apk/AquaDose.apk
+Size: 18,638,161 bytes
+SHA256: 8f07265184178c3f89e31c53cf85e9c99584e7bfeba1126e933f651ba2472c3f
+
+Release documentation update:
+- README.html updated for Android connection, pump list, pump name editing, calibration, manual dose, prime/stop prime, scheduled dosing validation, uncalibrated 0.0 default behavior, reset/reconnect flows, troubleshooting, and safe water testing.
+- README.md updated with the new APK checksum and Android schedule validation note.
+
+Build date/time:
+2026-05-14 21:50:30 +03:00
+
+Android build variant:
+debug
+
+Reason:
+Release signing is not configured in the Android Gradle project. A debug APK was built and copied as the installable release artifact.
+
+APK path:
+RELEASE/apk/AquaDose.apk
+
+APK size:
+18,558,017 bytes
+
+APK SHA256:
+f4366d08cae9ec4018483442faf4a79577db71d5c1921e210ce4627bc125f803
+
+APK install test:
+Passed. The APK was installed from RELEASE/apk/AquaDose.apk onto the connected Android phone with adb install -r.
+
+Connected Android device:
+Samsung SM-G998B, adb serial R5CRB06R7TY.
+
+Phone screenshots:
+Captured from the connected phone using ADB screencap and adb pull.
+
+Screenshot notes:
+- App screenshots were captured from the installed AquaDose APK.
+- The factory reset screenshot shows the confirmation dialog only. Factory reset was not confirmed.
+- The reconnect/setup screenshot uses the app's built-in setup address flow for http://192.168.4.1. No ESP32 reset was performed for that screenshot.
+- Android app local preferences were restored to the default empty state after the reconnect/setup screenshot.
+
+Failures or limitations:
+- A production release APK/AAB was not produced because no release signing configuration exists.
+- The included APK is debug signed.
+- The firmware source currently serves its own web UI with Bootstrap and Bootstrap Icons referenced from CDN URLs. RELEASE/README.html itself is self-contained and uses local Bootstrap files.
+- Arduino firmware was copied and inspected, but not compiled in this release pass.
+- The project directory was not a Git working tree in this workspace, so validation used filesystem checks rather than git status.
+
+Commands used:
+
+Inspect project:
+  Get-ChildItem -Force
+  rg --files -g '!RELEASE/**' -g '!**/.gradle/**' -g '!**/build/**' -g '!**/.git/**'
+
+Build Android debug APK:
+  $env:JAVA_HOME='<Android Studio bundled JBR>'
+  $env:ANDROID_HOME='%LOCALAPPDATA%\Android\Sdk'
+  $env:ANDROID_SDK_ROOT=$env:ANDROID_HOME
+  .\gradlew.bat :app:assembleDebug
+
+Check device:
+  %LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe devices -l
+
+Install release APK:
+  %LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe install -r RELEASE\apk\AquaDose.apk
+
+Capture app screenshots:
+  %LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe shell am start -n com.aquadose.app/.MainActivity
+  %LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe shell screencap -p /sdcard/<screenshot>.png
+  %LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe pull /sdcard/<screenshot>.png RELEASE\docs\assets\screenshots\
+
+Create APK checksum:
+  Get-FileHash -Algorithm SHA256 RELEASE\apk\AquaDose.apk
+
+Bootstrap assets:
+  Downloaded Bootstrap 5.3.3 CSS, Bootstrap 5.3.3 bundle JS, and Bootstrap LICENSE.txt into RELEASE/docs/assets/vendor/bootstrap/.
+
+Wiring documentation update:
+  Replaced the previous README.html wiring diagram images with deterministic local SVG diagrams:
+    RELEASE/docs/assets/images/single-pump-channel.svg
+    RELEASE/docs/assets/images/multi-channel-repeat.svg
+  Corrected the documented low-side N-MOSFET pump wiring.
+  Added the MOSFET Gate-to-Source/Common GND 10k ohm pull-down resistor to the documentation and wiring table.
+  Clarified that the 100 ohm gate resistor is a series resistor and does not replace the pull-down resistor.
+  Added the ESP32 3.3V logic-level MOSFET selection warning.
+
+Arduino release source rename:
+  Renamed the release sketch folder to RELEASE/source/arduino/AquaDose/.
+  Renamed the main sketch file to RELEASE/source/arduino/AquaDose/AquaDose.ino.
+  Updated release documentation to use the Arduino IDE-compatible AquaDose/AquaDose.ino path.
+
+Prototype and 3D model documentation update:
+  Update date/time: 2026-05-15 00:33:15 +03:00
+  Copied 4 real prototype photos into RELEASE/docs/assets/prototype/.
+  Copied the simplified schematic to RELEASE/docs/assets/prototype/circuit_image.png.
+  Added the simplified schematic to README.html as a beginner-friendly overview while keeping the SVG schematic as the authoritative wiring reference.
+  Visual schematic inspection did not find a mismatch with the documented low-side MOSFET wiring. README.html includes a visible note to verify the chosen MOSFET is fully enhanced at 3.3V ESP32 gate drive.
+  Copied the printable 3D model file to RELEASE/3d-model/AquaDose_Case.3mf.
+  Copied 4 3D model images into RELEASE/docs/assets/3d-model/images/.
+  Added README.html sections for real prototype photos, the 3D printed enclosure, and credits.
+  Added credit and LinkedIn link to README.html and README.md.
+  Skipped files or problems: none found.

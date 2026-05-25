@@ -1,0 +1,232 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">AquaDose multi-channel pump wiring repeat blocks</title>
+  <desc id="desc">Clean technical overview showing that all eight AquaDose pump channels repeat the same low-side N-MOSFET wiring block with red 12 volt pump supply bus, black common ground bus, blue GPIO gate signals, 100 ohm gate resistors, 10k ohm gate pull-down resistors, and flyback diodes with stripe to 12 volts.</desc>
+  <style>
+    .bg { fill: #f8fbff; }
+    .card { fill: #ffffff; stroke: #d8e2ef; stroke-width: 2; rx: 10; }
+    .component { fill: #ffffff; stroke: #1f2937; stroke-width: 2; rx: 7; }
+    .label { font-family: Arial, Helvetica, sans-serif; fill: #172033; font-size: 18px; }
+    .small { font-size: 14px; fill: #374151; }
+    .tiny { font-size: 12px; fill: #4b5563; }
+    .title { font-size: 28px; font-weight: 700; }
+    .wire { fill: none; stroke-width: 5; stroke-linejoin: round; stroke-linecap: square; }
+    .thin { stroke-width: 3; }
+    .red { stroke: #dc2626; }
+    .black { stroke: #111827; }
+    .blue { stroke: #2563eb; }
+    .gate { stroke: #9333ea; }
+    .drain { stroke: #64748b; }
+    .node { fill: #ffffff; stroke-width: 3; }
+    .node.red { stroke: #dc2626; }
+    .node.black { stroke: #111827; }
+    .node.gate { stroke: #9333ea; }
+    .node.drain { stroke: #64748b; }
+    .legend-box { fill: #ffffff; stroke: #d8e2ef; stroke-width: 2; rx: 10; }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="1200" height="720"/>
+  <text class="label title" x="40" y="46">Multi-channel repeat blocks</text>
+  <text class="small" x="42" y="76">Each card repeats the exact low-side MOSFET circuit shown above.</text>
+
+  <line class="wire red" x1="70" y1="116" x2="1130" y2="116"/>
+  <text class="label" x="80" y="106">+12V pump supply bus</text>
+  <line class="wire black" x1="70" y1="336" x2="1130" y2="336"/>
+  <text class="label" x="80" y="365">Common GND bus</text>
+
+  <line class="wire red" x1="70" y1="408" x2="1130" y2="408"/>
+  <text class="label" x="80" y="398">+12V pump supply bus</text>
+  <line class="wire black" x1="70" y1="628" x2="1130" y2="628"/>
+  <text class="label" x="80" y="657">Common GND bus</text>
+
+  <g transform="translate(72 142)">
+    <rect class="card" x="0" y="0" width="240" height="160"/>
+    <text class="label" x="16" y="30">Pump 1</text>
+    <text class="small" x="16" y="52">GPIO25</text>
+    <rect class="component" x="122" y="30" width="82" height="38"/>
+    <text class="tiny" x="138" y="54">Pump</text>
+    <rect class="component" x="118" y="94" width="86" height="44"/>
+    <text class="tiny" x="136" y="120">MOSFET</text>
+    <rect class="component" x="16" y="95" width="58" height="24"/>
+    <text class="tiny" x="27" y="111">100&#937;</text>
+    <polyline class="wire red" points="163,-26 163,30"/>
+    <polyline class="wire drain" points="183,68 183,82 161,82 161,94"/>
+    <polyline class="wire black" points="161,138 161,194"/>
+    <polyline class="wire blue" points="0,107 16,107"/>
+    <polyline class="wire gate" points="74,107 118,107"/>
+    <polyline class="wire gate thin" points="96,107 96,132"/>
+    <polyline class="wire black thin" points="96,132 96,194"/>
+    <polyline class="wire red thin" points="163,30 218,30 218,58"/>
+    <polyline class="wire drain thin" points="218,96 218,106 183,106 183,68"/>
+    <line class="black thin" x1="207" y1="58" x2="229" y2="58"/>
+    <polygon points="218,84 207,66 229,66" fill="none" stroke="#111827" stroke-width="2"/>
+  </g>
+
+  <g transform="translate(342 142)">
+    <rect class="card" x="0" y="0" width="240" height="160"/>
+    <text class="label" x="16" y="30">Pump 2</text>
+    <text class="small" x="16" y="52">GPIO26</text>
+    <rect class="component" x="122" y="30" width="82" height="38"/>
+    <text class="tiny" x="138" y="54">Pump</text>
+    <rect class="component" x="118" y="94" width="86" height="44"/>
+    <text class="tiny" x="136" y="120">MOSFET</text>
+    <rect class="component" x="16" y="95" width="58" height="24"/>
+    <text class="tiny" x="27" y="111">100&#937;</text>
+    <polyline class="wire red" points="163,-26 163,30"/>
+    <polyline class="wire drain" points="183,68 183,82 161,82 161,94"/>
+    <polyline class="wire black" points="161,138 161,194"/>
+    <polyline class="wire blue" points="0,107 16,107"/>
+    <polyline class="wire gate" points="74,107 118,107"/>
+    <polyline class="wire gate thin" points="96,107 96,132"/>
+    <polyline class="wire black thin" points="96,132 96,194"/>
+    <polyline class="wire red thin" points="163,30 218,30 218,58"/>
+    <polyline class="wire drain thin" points="218,96 218,106 183,106 183,68"/>
+    <line class="black thin" x1="207" y1="58" x2="229" y2="58"/>
+    <polygon points="218,84 207,66 229,66" fill="none" stroke="#111827" stroke-width="2"/>
+  </g>
+
+  <g transform="translate(612 142)">
+    <rect class="card" x="0" y="0" width="240" height="160"/>
+    <text class="label" x="16" y="30">Pump 3</text>
+    <text class="small" x="16" y="52">GPIO27</text>
+    <rect class="component" x="122" y="30" width="82" height="38"/>
+    <text class="tiny" x="138" y="54">Pump</text>
+    <rect class="component" x="118" y="94" width="86" height="44"/>
+    <text class="tiny" x="136" y="120">MOSFET</text>
+    <rect class="component" x="16" y="95" width="58" height="24"/>
+    <text class="tiny" x="27" y="111">100&#937;</text>
+    <polyline class="wire red" points="163,-26 163,30"/>
+    <polyline class="wire drain" points="183,68 183,82 161,82 161,94"/>
+    <polyline class="wire black" points="161,138 161,194"/>
+    <polyline class="wire blue" points="0,107 16,107"/>
+    <polyline class="wire gate" points="74,107 118,107"/>
+    <polyline class="wire gate thin" points="96,107 96,132"/>
+    <polyline class="wire black thin" points="96,132 96,194"/>
+    <polyline class="wire red thin" points="163,30 218,30 218,58"/>
+    <polyline class="wire drain thin" points="218,96 218,106 183,106 183,68"/>
+    <line class="black thin" x1="207" y1="58" x2="229" y2="58"/>
+    <polygon points="218,84 207,66 229,66" fill="none" stroke="#111827" stroke-width="2"/>
+  </g>
+
+  <g transform="translate(882 142)">
+    <rect class="card" x="0" y="0" width="240" height="160"/>
+    <text class="label" x="16" y="30">Pump 4</text>
+    <text class="small" x="16" y="52">GPIO14</text>
+    <rect class="component" x="122" y="30" width="82" height="38"/>
+    <text class="tiny" x="138" y="54">Pump</text>
+    <rect class="component" x="118" y="94" width="86" height="44"/>
+    <text class="tiny" x="136" y="120">MOSFET</text>
+    <rect class="component" x="16" y="95" width="58" height="24"/>
+    <text class="tiny" x="27" y="111">100&#937;</text>
+    <polyline class="wire red" points="163,-26 163,30"/>
+    <polyline class="wire drain" points="183,68 183,82 161,82 161,94"/>
+    <polyline class="wire black" points="161,138 161,194"/>
+    <polyline class="wire blue" points="0,107 16,107"/>
+    <polyline class="wire gate" points="74,107 118,107"/>
+    <polyline class="wire gate thin" points="96,107 96,132"/>
+    <polyline class="wire black thin" points="96,132 96,194"/>
+    <polyline class="wire red thin" points="163,30 218,30 218,58"/>
+    <polyline class="wire drain thin" points="218,96 218,106 183,106 183,68"/>
+    <line class="black thin" x1="207" y1="58" x2="229" y2="58"/>
+    <polygon points="218,84 207,66 229,66" fill="none" stroke="#111827" stroke-width="2"/>
+  </g>
+
+  <g transform="translate(72 434)">
+    <rect class="card" x="0" y="0" width="240" height="160"/>
+    <text class="label" x="16" y="30">Pump 5</text>
+    <text class="small" x="16" y="52">GPIO32</text>
+    <rect class="component" x="122" y="30" width="82" height="38"/>
+    <text class="tiny" x="138" y="54">Pump</text>
+    <rect class="component" x="118" y="94" width="86" height="44"/>
+    <text class="tiny" x="136" y="120">MOSFET</text>
+    <rect class="component" x="16" y="95" width="58" height="24"/>
+    <text class="tiny" x="27" y="111">100&#937;</text>
+    <polyline class="wire red" points="163,-26 163,30"/>
+    <polyline class="wire drain" points="183,68 183,82 161,82 161,94"/>
+    <polyline class="wire black" points="161,138 161,194"/>
+    <polyline class="wire blue" points="0,107 16,107"/>
+    <polyline class="wire gate" points="74,107 118,107"/>
+    <polyline class="wire gate thin" points="96,107 96,132"/>
+    <polyline class="wire black thin" points="96,132 96,194"/>
+    <polyline class="wire red thin" points="163,30 218,30 218,58"/>
+    <polyline class="wire drain thin" points="218,96 218,106 183,106 183,68"/>
+    <line class="black thin" x1="207" y1="58" x2="229" y2="58"/>
+    <polygon points="218,84 207,66 229,66" fill="none" stroke="#111827" stroke-width="2"/>
+  </g>
+
+  <g transform="translate(342 434)">
+    <rect class="card" x="0" y="0" width="240" height="160"/>
+    <text class="label" x="16" y="30">Pump 6</text>
+    <text class="small" x="16" y="52">GPIO33</text>
+    <rect class="component" x="122" y="30" width="82" height="38"/>
+    <text class="tiny" x="138" y="54">Pump</text>
+    <rect class="component" x="118" y="94" width="86" height="44"/>
+    <text class="tiny" x="136" y="120">MOSFET</text>
+    <rect class="component" x="16" y="95" width="58" height="24"/>
+    <text class="tiny" x="27" y="111">100&#937;</text>
+    <polyline class="wire red" points="163,-26 163,30"/>
+    <polyline class="wire drain" points="183,68 183,82 161,82 161,94"/>
+    <polyline class="wire black" points="161,138 161,194"/>
+    <polyline class="wire blue" points="0,107 16,107"/>
+    <polyline class="wire gate" points="74,107 118,107"/>
+    <polyline class="wire gate thin" points="96,107 96,132"/>
+    <polyline class="wire black thin" points="96,132 96,194"/>
+    <polyline class="wire red thin" points="163,30 218,30 218,58"/>
+    <polyline class="wire drain thin" points="218,96 218,106 183,106 183,68"/>
+    <line class="black thin" x1="207" y1="58" x2="229" y2="58"/>
+    <polygon points="218,84 207,66 229,66" fill="none" stroke="#111827" stroke-width="2"/>
+  </g>
+
+  <g transform="translate(612 434)">
+    <rect class="card" x="0" y="0" width="240" height="160"/>
+    <text class="label" x="16" y="30">Pump 7</text>
+    <text class="small" x="16" y="52">GPIO18</text>
+    <rect class="component" x="122" y="30" width="82" height="38"/>
+    <text class="tiny" x="138" y="54">Pump</text>
+    <rect class="component" x="118" y="94" width="86" height="44"/>
+    <text class="tiny" x="136" y="120">MOSFET</text>
+    <rect class="component" x="16" y="95" width="58" height="24"/>
+    <text class="tiny" x="27" y="111">100&#937;</text>
+    <polyline class="wire red" points="163,-26 163,30"/>
+    <polyline class="wire drain" points="183,68 183,82 161,82 161,94"/>
+    <polyline class="wire black" points="161,138 161,194"/>
+    <polyline class="wire blue" points="0,107 16,107"/>
+    <polyline class="wire gate" points="74,107 118,107"/>
+    <polyline class="wire gate thin" points="96,107 96,132"/>
+    <polyline class="wire black thin" points="96,132 96,194"/>
+    <polyline class="wire red thin" points="163,30 218,30 218,58"/>
+    <polyline class="wire drain thin" points="218,96 218,106 183,106 183,68"/>
+    <line class="black thin" x1="207" y1="58" x2="229" y2="58"/>
+    <polygon points="218,84 207,66 229,66" fill="none" stroke="#111827" stroke-width="2"/>
+  </g>
+
+  <g transform="translate(882 434)">
+    <rect class="card" x="0" y="0" width="240" height="160"/>
+    <text class="label" x="16" y="30">Pump 8</text>
+    <text class="small" x="16" y="52">GPIO19</text>
+    <rect class="component" x="122" y="30" width="82" height="38"/>
+    <text class="tiny" x="138" y="54">Pump</text>
+    <rect class="component" x="118" y="94" width="86" height="44"/>
+    <text class="tiny" x="136" y="120">MOSFET</text>
+    <rect class="component" x="16" y="95" width="58" height="24"/>
+    <text class="tiny" x="27" y="111">100&#937;</text>
+    <polyline class="wire red" points="163,-26 163,30"/>
+    <polyline class="wire drain" points="183,68 183,82 161,82 161,94"/>
+    <polyline class="wire black" points="161,138 161,194"/>
+    <polyline class="wire blue" points="0,107 16,107"/>
+    <polyline class="wire gate" points="74,107 118,107"/>
+    <polyline class="wire gate thin" points="96,107 96,132"/>
+    <polyline class="wire black thin" points="96,132 96,194"/>
+    <polyline class="wire red thin" points="163,30 218,30 218,58"/>
+    <polyline class="wire drain thin" points="218,96 218,106 183,106 183,68"/>
+    <line class="black thin" x1="207" y1="58" x2="229" y2="58"/>
+    <polygon points="218,84 207,66 229,66" fill="none" stroke="#111827" stroke-width="2"/>
+  </g>
+
+  <rect class="legend-box" x="805" y="30" width="330" height="76"/>
+  <line class="wire red" x1="825" y1="52" x2="875" y2="52"/><text class="small" x="890" y="57">+12V pump supply</text>
+  <line class="wire black" x1="825" y1="76" x2="875" y2="76"/><text class="small" x="890" y="81">Common GND</text>
+  <line class="wire blue" x1="1008" y1="52" x2="1058" y2="52"/><text class="small" x="1070" y="57">GPIO</text>
+  <line class="wire gate" x1="1008" y1="76" x2="1058" y2="76"/><text class="small" x="1070" y="81">Gate</text>
+
+  <text class="small" x="280" y="700">Common GND is shared by ESP32 GND, buck GND, each MOSFET Source, and 12V PSU negative.</text>
+</svg>
