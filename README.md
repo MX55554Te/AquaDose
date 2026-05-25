@@ -4,8 +4,26 @@ AquaDose is an ESP32-based aquarium dosing controller with a native Android app 
 
 Open [README.html](README.html) in a browser for the full styled guide with screenshots, wiring notes, firmware instructions, Android app flow, troubleshooting, and safety notes. GitHub does not render Bootstrap HTML as a normal README page, so this markdown file is intentionally short.
 
-# AquaDose wiring diagram 
-![AquaDose prototype](docs/assets/circuit_image.png)
+# AquaDose wiring diagram
+
+The simplified wiring diagram below shows the external MOSFET driver circuit used to control the peristaltic pumps from the ESP32.
+
+<img src="docs/assets/prototype/circuit_image.png" alt="AquaDose wiring diagram" width="800">
+
+## Prototype Photos
+
+These photos show the current AquaDose prototype build, including the controller, wiring, pump layout, and enclosure progress.
+
+<table>
+  <tr>
+    <td><img src="docs/assets/prototype/prototype_01.jpeg" alt="AquaDose prototype photo 1" width="350"></td>
+    <td><img src="docs/assets/prototype/prototype_02.jpeg" alt="AquaDose prototype photo 2" width="350"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/assets/prototype/prototype_03.jpeg" alt="AquaDose prototype photo 3" width="350"></td>
+    <td><img src="docs/assets/prototype/prototype_04.jpeg" alt="AquaDose prototype photo 4" width="350"></td>
+  </tr>
+</table>
 
 ## Release Contents
 
