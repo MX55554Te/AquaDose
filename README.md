@@ -78,8 +78,6 @@ Key files:
 
 ## APK
 
-The included APK is a debug build because release signing is not configured in the project.
-
 Verify it with:
 
 ```powershell
