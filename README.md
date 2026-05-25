@@ -18,7 +18,9 @@ These photos show the current AquaDose prototype build, including the controller
   <tr>
     <td><img src="docs/assets/prototype/prototype_01.jpeg" alt="AquaDose prototype photo 1" width="350"></td>
     <td><img src="docs/assets/prototype/prototype_02.jpeg" alt="AquaDose prototype photo 2" width="350"></td>
-  </tr>
+  <tr>
+    <td><img src="docs/assets/prototype/1.jpeg" alt="AquaDose prototype photo 1" width="350"></td>
+    <td><img src="docs/assets/prototype/2.jpeg" alt="AquaDose prototype photo 2" width="350"></td>
   <tr>
     <td><img src="docs/assets/prototype/prototype_03.jpeg" alt="AquaDose prototype photo 3" width="350"></td>
     <td><img src="docs/assets/prototype/prototype_04.jpeg" alt="AquaDose prototype photo 4" width="350"></td>
